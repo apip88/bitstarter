@@ -61,11 +61,11 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 
 var loadURL = function(urladdress) {
     console.log('loadURL ran');
-    return rest.get(urladdress).on('complete', function(result) { console.log("callback ran"); var loaded = cheerio.load(result); console.log(loaded); //var output = passOut(loaded, checksfile);
+    return rest.get(urladdress).on('complete', function(result) { console.log("callback ran"); var loaded = cheerio.load(result); console.log(loaded); //var output = passOutput(loaded, checksfile);
                                     });
 };
 
-var passOut = function(file, checks){
+var passOutput = function(file, checks){
     var checkJson = checkHtmlFile(file, checks);
     var outJson = JSON.stringify(checkJson, null, 4);
     console.log('passOut ran');
@@ -85,9 +85,10 @@ if(require.main == module) {
     .option('-f, --file [html_file]', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
     .option('-u, --url <url_address>', 'URL address', clone(loadURL), CHECKSFILE_DEFAULT)
     .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
+    passOutput(program.file, program.checks);
+//    var checkJson = checkHtmlFile(program.file, program.checks);
+//    var outJson = JSON.stringify(checkJson, null, 4);
+//    console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
