@@ -37,22 +37,20 @@ var assertFileExists = function(infile) {
     return instr;
 };
 
-
 var cheerioHtmlFile = function(htmlfile) {
     return cheerio.load(fs.readFileSync(htmlfile));
 };
 
-
 /*
  var cheerioHtmlFile = function(htmlfile) {
- console.log("cheerioOutput called");
+ console.log("cheerioHtmlFile called");
  cheerio.load(fs.readFile(htmlfile, function(err, data){
- if (err) throw err;
+ //if (err) throw err;
  console.log("callback cheerioHtmlFile ran");
- return data;
+ //return data;
  })
  );
- console.log("cheerioOutput ran");
+ console.log("cheerioHtmlFile ran");
  };
  */
 
@@ -83,12 +81,13 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     return out;
 };
 
-var loadURL = function(urladdress) {
+var loadURL = function(urladdress, checksfile) {
     console.log('loadURL ran');
     return rest.get(urladdress).on('complete', function(result) {
                                    console.log("callback loadURL ran");
                                    var loaded = cheerio.load(result);
-                                   console.log(loaded); //var output = passOutput(loaded, checksfile);
+                                   //console.log(loaded);
+                                   //return passOutput(loaded, checksfile);
                                    });
 };
 
@@ -109,15 +108,15 @@ if(require.main == module) {
     program
     .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
     .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
-    .option('-u, --url <url_address>', 'URL address', clone(loadURL), CHECKSFILE_DEFAULT)
+    .option('-u, --url <url_address>', 'URL address', clone(loadURL))
     .parse(process.argv);
-    passOutput(program.file, program.checks);
-    /* This should run only if the file option is selected
-     if( <file option was selected> ){
-     passOutput(program.file, program.checks);
-     }
-     elseif(<url option was selected>){
-     }
+    //passOutput(program.file, program.checks);
+    if(program.url){
+        console.log('URL Selected');
+    } else if(program.file) {
+        passOutput(program.file, program.checks);
+    }
+    /*
      else {
      //return an error
      }
