@@ -30,7 +30,6 @@ var CHECKSFILE_DEFAULT = "checks.json";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
-    console.log('assertFileExists ran');
     if(!fs.existsSync(instr)) {
         console.log("%s does not exist. Exiting.", instr);
         process.exit(1); // http://nodejs.org/api/process.html#process_process_exit_code
@@ -38,15 +37,40 @@ var assertFileExists = function(infile) {
     return instr;
 };
 
+
 var cheerioHtmlFile = function(htmlfile) {
-    var cheerioOutput = cheerio.load(fs.readFileSync(htmlfile));
-    console.log(cheerioOutput);
-    return cheerioOutput;
+    return cheerio.load(fs.readFileSync(htmlfile));
 };
+
+
+/*
+ var cheerioHtmlFile = function(htmlfile) {
+ console.log("cheerioOutput called");
+ cheerio.load(fs.readFile(htmlfile, function(err, data){
+ if (err) throw err;
+ console.log("callback cheerioHtmlFile ran");
+ return data;
+ })
+ );
+ console.log("cheerioOutput ran");
+ };
+ */
+
 
 var loadChecks = function(checksfile) {
     return JSON.parse(fs.readFileSync(checksfile));
 };
+
+
+/*
+ var loadChecks = function(checksfile) {
+ return JSON.parse(fs.readFile(checksfile), function(err, data){
+ if (err) throw err;
+ console.log("callback cheerioHtmlFile ran");
+ //return data;
+ });
+ };
+ */
 
 var checkHtmlFile = function(htmlfile, checksfile) {
     $ = cheerioHtmlFile(htmlfile);
@@ -61,8 +85,11 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 
 var loadURL = function(urladdress) {
     console.log('loadURL ran');
-    return rest.get(urladdress).on('complete', function(result) { console.log("callback ran"); var loaded = cheerio.load(result); console.log(loaded); //var output = passOutput(loaded, checksfile);
-                                    });
+    return rest.get(urladdress).on('complete', function(result) {
+                                   console.log("callback loadURL ran");
+                                   var loaded = cheerio.load(result);
+                                   console.log(loaded); //var output = passOutput(loaded, checksfile);
+                                   });
 };
 
 var passOutput = function(file, checks){
@@ -71,7 +98,6 @@ var passOutput = function(file, checks){
     console.log('passOut ran');
     console.log(outJson);
 };
-
 
 var clone = function(fn) {
     // Workaround for commander.js issue.
@@ -82,13 +108,20 @@ var clone = function(fn) {
 if(require.main == module) {
     program
     .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
-    .option('-f, --file [html_file]', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+    .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
     .option('-u, --url <url_address>', 'URL address', clone(loadURL), CHECKSFILE_DEFAULT)
     .parse(process.argv);
     passOutput(program.file, program.checks);
-//    var checkJson = checkHtmlFile(program.file, program.checks);
-//    var outJson = JSON.stringify(checkJson, null, 4);
-//    console.log(outJson);
+    /* This should run only if the file option is selected
+     if( <file option was selected> ){
+     passOutput(program.file, program.checks);
+     }
+     elseif(<url option was selected>){
+     }
+     else {
+     //return an error
+     }
+     */
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
