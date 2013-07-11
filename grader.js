@@ -41,37 +41,11 @@ var cheerioHtmlFile = function(htmlfile) {
     return cheerio.load(fs.readFileSync(htmlfile));
 };
 
-/*
- var cheerioHtmlFile = function(htmlfile) {
- console.log("cheerioHtmlFile called");
- cheerio.load(fs.readFile(htmlfile, function(err, data){
- //if (err) throw err;
- console.log("callback cheerioHtmlFile ran");
- //return data;
- })
- );
- console.log("cheerioHtmlFile ran");
- };
- */
-
-
 var loadChecks = function(checksfile) {
     return JSON.parse(fs.readFileSync(checksfile));
 };
 
-
-/*
- var loadChecks = function(checksfile) {
- return JSON.parse(fs.readFile(checksfile), function(err, data){
- if (err) throw err;
- console.log("callback cheerioHtmlFile ran");
- //return data;
- });
- };
- */
-
-var checkHtmlFile = function(htmlfile, checksfile) {
-    $ = cheerioHtmlFile(htmlfile);
+var checkHtmlFile = function($, checksfile) {
     var checks = loadChecks(checksfile).sort();
     var out = {};
     for(var ii in checks) {
@@ -82,19 +56,18 @@ var checkHtmlFile = function(htmlfile, checksfile) {
 };
 
 var loadURL = function(urladdress, checksfile) {
-    console.log('loadURL ran');
     return rest.get(urladdress).on('complete', function(result) {
-                                   console.log("callback loadURL ran");
                                    var loaded = cheerio.load(result);
-                                   //console.log(loaded);
-                                   //return passOutput(loaded, checksfile);
+                                   var checkJson = checkHtmlFile(loaded, program.checks)
+                                   var outJson = JSON.stringify(checkJson, null, 4);
+                                   console.log(outJson);
                                    });
 };
 
 var passOutput = function(file, checks){
-    var checkJson = checkHtmlFile(file, checks);
+    var $ = cheerioHtmlFile(file);
+    var checkJson = checkHtmlFile($, checks);
     var outJson = JSON.stringify(checkJson, null, 4);
-    console.log('passOut ran');
     console.log(outJson);
 };
 
@@ -108,19 +81,15 @@ if(require.main == module) {
     program
     .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
     .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
-    .option('-u, --url <url_address>', 'URL address', clone(loadURL))
+    .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+    .option('-u, --url <url_address>', 'URL address')
     .parse(process.argv);
-    //passOutput(program.file, program.checks);
     if(program.url){
-        console.log('URL Selected');
+        loadURL(program.url, program.checksfile);
     } else if(program.file) {
         passOutput(program.file, program.checks);
     }
-    /*
-     else {
-     //return an error
-     }
-     */
+
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
